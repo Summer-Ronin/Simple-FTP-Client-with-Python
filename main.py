@@ -9,8 +9,17 @@ from rich.table import Table
 console = Console()
 
 def connect():
-    ftp_usr = "testuser"
-    ftp_pwd = ""
+    """
+        ===================================================
+		Connect to server using your Ipv6 address
+        - If everything is OK, it will run on with command and its parameter ftp_client
+        - ftp_user is user you register in FileZilla 
+        - ftp_pwd is optional, if you have password, put it in
+		===================================================
+    """
+
+    ftp_user = "testuser"
+    # ftp_pwd = ""
     # login_token = False
     while(True):
         console.print("Nhập địa chỉ ip host: ", style="#1BFF00")
@@ -18,13 +27,13 @@ def connect():
         # connect to local FTP server
         try:
             ftp_client = ftp(ftp_ip)
-            ftp_client.login(user= ftp_usr, passwd = ftp_pwd)
+            ftp_client.login(user= ftp_user)
             print("Đăng nhập thành công!")
             command(ftp_client)
             break
             # login_token = True
         except ftplib.all_errors as e:
-            print("Lỗi kết nối! Kiểm tra lại địa chỉ host", e)
+            console.print("Lỗi kết nối! Kiểm tra lại địa chỉ host", e, style="red")
 
 
 def uploadFile(file,ftp_client):
@@ -42,30 +51,25 @@ def uploadFile(file,ftp_client):
             Trying to open file and bind to file_stream
             Catch error when:
                 - File cannot be found
+                - File cannot be uploaded
             ===================================================
         """
 
         file_stream = open(file,"rb") 
     except IOError:
         console.print("Error: Xin lỗi,", file, "không tồn tại.", style="red")
-        
-        while IOError:
-            console.print("Vui lòng nhập lại tên file:", style="cyan2")
-            file = input()
 
     # uploading the file     
     try:
         ftp_client.storbinary("{CMD} {FileName}".
                 format(CMD="STOR",FileName=file),
                 file_stream)     
-        file_stream.close()                     
-        print("After upload\n", ftp_client.retrlines("LIST"))
+        file_stream.close()      
+        console.print("Upload thành công", style="cyan")               
+        print("Folder sau khi upload\n", ftp_client.retrlines("LIST"))
         ftp_client.close
     except  ftplib.all_errors as e:
-        errorcode_string = str(e).split(None, 1)
-        if errorcode_string[0] == "550":
-            print(errorcode_string[1], "Sai tên file hoặc file không tồn tại trong thư mục")
-        else: print("Lỗi upload: ",e)
+        console.print(e, style="red")
 
 def downloadFile(file,ftp_client):        
     """
@@ -86,11 +90,10 @@ def downloadFile(file,ftp_client):
     ftp_client.retrbinary('RETR {}'.format(file_name),
                 file_stream.write, 1024)
     file_stream.close()                     
-    print("Download OK")
+    console.print("Download thành công", style="cyan2")
     ftp_client.close
 
 def command(ftp_client):
-    """ Main entry point of the app """
     table = Table("Hãy chọn 1 chức năng sau")
     table.add_column("Chức năng", justify="justify", style="bright_yellow", no_wrap=True)
     
@@ -130,19 +133,20 @@ def command(ftp_client):
             """
             if(int(command_numb) == 1):
                 # Listing all files in shared folder
+                console.print("Chi tiết folder", style="cyan2")
                 print(ftp_client.retrlines('LIST'))
                 command_numb = True
                          
             elif(int(command_numb) == 2):
                 console.print("Nhập tên file bạn muốn upload: ", style="cyan2")
                 up_file = input()
-                uploadFile(up_file,ftp_client)
+                uploadFile(up_file, ftp_client)
                 command_numb = True
 
             elif(int(command_numb) == 3):
                 console.print("Nhập tên file bạn muốn download: ", style="cyan2")
                 down_file = input()
-                downloadFile(down_file,ftp_client)
+                downloadFile(down_file, ftp_client)
                 command_numb = True
                 
             elif(int(command_numb) == 4):
@@ -153,8 +157,6 @@ def command(ftp_client):
 def main():
     connect()
     
-
-
 if __name__ == "__main__":
     """ This is executed when run from the command line """
     main()
