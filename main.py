@@ -1,9 +1,11 @@
 # Libs import 
 from ftplib import FTP as ftp
+from re import L
 from rich.console import Console
 from rich.table import Table
 
 # Define local attributes
+# ftp_ip still hardcode tho
 ftp_ip = "192.168.100.17"
 ftp_usr = "testuser"
 ftp_pwd = ""
@@ -23,13 +25,18 @@ def uploadFile(file):
     # read file to send to byte
     file_stream = open(file,"rb") 
 
-    # uploading the file       
-    ftp_client.storbinary("{CMD} {FileName}".
+    # uploading the file     
+    try:
+        ftp_client.storbinary("{CMD} {FileName}".
                 format(CMD="STOR",FileName=file),
                 file_stream)     
-    file_stream.close()                     
-    print("After upload\n", ftp_client.retrlines("LIST"))
-    ftp_client.close
+        file_stream.close()                     
+        print("After upload\n", ftp_client.retrlines("LIST"))
+        ftp_client.close
+    except  ftp_client.all_errors as e:
+        errorcode_string = str(e).split(None, 1)
+        if errorcode_string[0] == "550":
+            print("Wrong file name or file not exist", errorcode_string[1])
 
 def downloadFile(file):        
     """
@@ -67,26 +74,32 @@ def main():
 
     exit_code = False 
 
-    while (int(command_numb) < 4 or int(command_numb) > 0) and exit_code == False:
+    while exit_code == False:
         # input command defined by user
-        if(int(command_numb) > 4 or int(command_numb) < 0):
+        if(int(command_numb) > 4 or int(command_numb) <= 0):
             console.print("Vui lòng chỉ nhập số có trong bảng:", style="spring_green3")
             command_numb = input()
+
+        elif(command_numb == True):
+            console.print("Nhập vào số bạn muốn thực thi:", style="spring_green3")
+            command_numb = input()
+
         else:
             # Check selection
             if(int(command_numb) == 1):
                 # Listing all files in shared folder
                 print(ftp_client.retrlines('LIST'))
-                break
-            
+                command_numb = True
+                         
             elif(int(command_numb) == 2):
-                uploadFile("test_upload.txt")
-                break
+                file = input("Nhập tên file bạn muốn upload: ")
+                uploadFile(file)
+                command_numb = True
 
             elif(int(command_numb) == 3):
                 downloadFile("sample.txt")
-                break
-
+                command_numb = True
+                
             elif(int(command_numb) == 4):
                 exit_code = True
                 console.print("Chào tạm biệt và hẹn gặp lại!", style="cyan2")
