@@ -9,6 +9,7 @@ from rich.table import Table
 ftp_ip = "192.168.100.17"
 ftp_usr = "testuser"
 ftp_pwd = ""
+console = Console()
 
 # connect to local FTP server
 ftp_client = ftp(ftp_ip)
@@ -21,9 +22,22 @@ def uploadFile(file):
         Input: file - address of the file
         Output: Notification that file uploading successfully or not
     """
+    
+    try:
+        """
+            Trying to open file and bind to file_stream
+            Catch error when:
+                - File cannot be found
+        """
 
-    # read file to send to byte
-    file_stream = open(file,"rb") 
+        file_stream = open(file,"rb") 
+    except IOError:
+        console.print("Error: Xin lỗi,", file, "không tồn tại.", style="red")
+        
+        while IOError:
+            console.print("Vui lòng nhập lại tên file:", style="cyan2")
+            file = input()
+
 
     # uploading the file     
     try:
@@ -33,10 +47,9 @@ def uploadFile(file):
         file_stream.close()                     
         print("After upload\n", ftp_client.retrlines("LIST"))
         ftp_client.close
-    except  ftp_client.all_errors as e:
-        errorcode_string = str(e).split(None, 1)
-        if errorcode_string[0] == "550":
-            print("Wrong file name or file not exist", errorcode_string[1])
+    
+    except ftp_client.all_errors:
+        console.print(str(e), style="red")
 
 def downloadFile(file):        
     """
@@ -56,8 +69,7 @@ def downloadFile(file):
     print("Download OK")
     ftp_client.close
 
-def main():
-    """ Main entry point of the app """
+def terminalMain():
     table = Table("Hãy chọn 1 chức năng sau")
     table.add_column("Chức năng", justify="justify", style="bright_yellow", no_wrap=True)
     
@@ -66,7 +78,6 @@ def main():
     table.add_row("", "3. Download file từ server")
     table.add_row("", "4. Thoát khỏi chương trình")
     
-    console = Console()
     console.print(table)
     
     console.print("Nhập vào số bạn muốn thực thi:", style="spring_green3")
@@ -104,6 +115,11 @@ def main():
                 exit_code = True
                 console.print("Chào tạm biệt và hẹn gặp lại!", style="cyan2")
                 exit()
+
+
+def main():
+    """ Main entry point of the app """
+    terminalMain()
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
