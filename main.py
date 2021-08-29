@@ -5,15 +5,16 @@ from re import L
 from rich.console import Console
 from rich.table import Table
 
-# Define local attributes
-# ftp_ip still hardcode tho
-# ftp_ip = "192.168.100.5"
+# Define global attributes
+console = Console()
+
 def connect():
     ftp_usr = "testuser"
     ftp_pwd = ""
     # login_token = False
     while(True):
-        ftp_ip = input("Nhập địa chỉ ip host: ")
+        console.print("Nhập địa chỉ ip host: ", style="#1BFF00")
+        ftp_ip = input()
         # connect to local FTP server
         try:
             ftp_client = ftp(ftp_ip)
@@ -23,21 +24,25 @@ def connect():
             break
             # login_token = True
         except ftplib.all_errors as e:
-            print("Lỗi kết nối! Kiểm tra lại địa chỉ host",e)
+            print("Lỗi kết nối! Kiểm tra lại địa chỉ host", e)
 
 
 def uploadFile(file,ftp_client):
     """
-        Uploading the file to local FPT server
+        ===================================================
+		Uploading the file to local FPT server
         Input: file - address of the file
         Output: Notification that file uploading successfully or not
+		===================================================
     """
     
     try:
         """
+            ===================================================
             Trying to open file and bind to file_stream
             Catch error when:
                 - File cannot be found
+            ===================================================
         """
 
         file_stream = open(file,"rb") 
@@ -64,9 +69,12 @@ def uploadFile(file,ftp_client):
 
 def downloadFile(file,ftp_client):        
     """
+        ===================================================
         Downloading the file to local FPT server
         Input: file - address of the file
         Output: Notification that file downloading successfully or not
+        ===================================================
+        
     """
     # file =input("Nhập tên file cần download: ")
 
@@ -99,7 +107,13 @@ def command(ftp_client):
     exit_code = False 
 
     while exit_code == False:
-        # input command defined by user
+        """
+        ===================================================
+        COMMAND NUMB INPUT ERROR HANDLING
+        - Invalid numbers
+        - Invalid input with different types
+        ===================================================
+        """
         if(int(command_numb) > 4 or int(command_numb) <= 0):
             console.print("Vui lòng chỉ nhập số có trong bảng:", style="spring_green3")
             command_numb = input()
@@ -109,26 +123,26 @@ def command(ftp_client):
             command_numb = input()
 
         else:
-            # Check selection
+            """
+            ===================================================
+            ################### CHECK SELECTION ##############
+            ===================================================
+            """
             if(int(command_numb) == 1):
                 # Listing all files in shared folder
                 print(ftp_client.retrlines('LIST'))
                 command_numb = True
                          
             elif(int(command_numb) == 2):
-                """
-                Uploading the file to local FPT server
-                Input: file - address of the file
-                Output: Notification that file uploading successfully or not
-                """
-                file = input("Nhập tên file bạn muốn upload: ")
-                uploadFile(file,ftp_client)
+                console.print("Nhập tên file bạn muốn upload: ", style="cyan2")
+                up_file = input()
+                uploadFile(up_file,ftp_client)
                 command_numb = True
 
             elif(int(command_numb) == 3):
-
-                file =input("Nhập tên file cần download: ")
-                downloadFile(file,ftp_client)
+                console.print("Nhập tên file bạn muốn download: ", style="cyan2")
+                down_file = input()
+                downloadFile(down_file,ftp_client)
                 command_numb = True
                 
             elif(int(command_numb) == 4):
