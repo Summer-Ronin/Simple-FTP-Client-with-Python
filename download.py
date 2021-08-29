@@ -1,6 +1,6 @@
 from ftplib import FTP
 
-ftp_ip = "192.168.100.17"
+ftp_ip = "192.168.100.5"
 ftp_usr = "testuser"
 ftp_pwd = ""
 
@@ -22,6 +22,7 @@ file_stream = open(file_path,"wb")
  # read file to send to byte
 ftp_client.retrbinary('RETR {}'.format(file_name),
                file_stream.write, 1024)
-file_stream.close()                     
+file_stream.close()
 print("Download OK")
+print(ftp_client.retrlines('LIST'))                    
 ftp_client.close
