@@ -32,9 +32,21 @@ def uploadFile(file,ftp_client):
         Input: file - address of the file
         Output: Notification that file uploading successfully or not
     """
+    
+    try:
+        """
+            Trying to open file and bind to file_stream
+            Catch error when:
+                - File cannot be found
+        """
 
-    # read file to send to byte
-    file_stream = open(file,"rb") 
+        file_stream = open(file,"rb") 
+    except IOError:
+        console.print("Error: Xin lỗi,", file, "không tồn tại.", style="red")
+        
+        while IOError:
+            console.print("Vui lòng nhập lại tên file:", style="cyan2")
+            file = input()
 
     # uploading the file     
     try:
@@ -79,7 +91,6 @@ def command(ftp_client):
     table.add_row("", "3. Download file từ server")
     table.add_row("", "4. Thoát khỏi chương trình")
     
-    console = Console()
     console.print(table)
     
     console.print("Nhập vào số bạn muốn thực thi:", style="spring_green3")
